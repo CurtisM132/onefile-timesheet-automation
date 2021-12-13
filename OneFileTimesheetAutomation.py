@@ -51,11 +51,8 @@ def create_timesheet_for_today(driver):
     entryInput.send_keys("Study Day")
 
     # Timesheet Category
-    categorySelect = driver.find_element_by_tag_name("select")
-    categorySelect.click()
-    categorySelectOption = driver.find_element_by_xpath(
-        "//option[text()='Assignment preparation & writing']")
-    categorySelectOption.click()
+    driver.find_element_by_tag_name("select").click()
+    driver.find_element_by_xpath("//option[text()='Assignment preparation & writing']").click()
 
     timeInputsContainer = driver.find_element_by_class_name(
         "date-time-picker-block")
