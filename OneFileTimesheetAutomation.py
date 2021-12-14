@@ -1,6 +1,7 @@
 import json
 import os
-from datetime import date
+import sys
+from datetime import date, datetime
 from time import sleep
 
 from selenium import webdriver
@@ -17,6 +18,7 @@ def set_chrome_options():
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
     options.add_argument("--start-maximized")
     options.add_argument("--headless")
+    options.add_argument("--disable-gp")
 
     return options
 
@@ -43,7 +45,7 @@ def open_portfolio(driver):
         portfolios[0].click()
 
 
-def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory):
+def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, dateStr):
     sleep(0.5)
     driver.get("https://live.onefile.co.uk/timesheet/")
     sleep(0.5)
@@ -66,7 +68,7 @@ def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory):
         "date-time-picker-block")
     timeInputs = timeInputsContainer.find_elements_by_tag_name("input")
     # Date
-    timeInputs[0].send_keys(date.today().strftime("%d/%m/%Y"))
+    timeInputs[0].send_keys(dateStr)
     # Start Time
     timeInputs[1].send_keys("09:00")
 
@@ -84,6 +86,14 @@ def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory):
 
 
 if __name__ == "__main__":
+    currentDate = date.today().strftime("%d/%m/%Y")
+    if len(sys.argv) >= 2:
+        try:
+            datetime.strptime(sys.argv[1], '%d/%m/%Y')
+            currentDate = sys.argv[1]
+        except ValueError:
+            print("Incorrect data format, should be DD/MM/YYYY")
+
     data = get_json_details()
 
     driver = create_webdriver()
@@ -111,6 +121,6 @@ if __name__ == "__main__":
     except KeyError:
         print("No Timesheet Category, using default of {0}".format(timesheetCategory))
 
-    create_timesheet_for_today(driver, timesheetDescription, timesheetCategory)
+    create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, currentDate)
 
     driver.close()
