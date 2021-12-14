@@ -1,14 +1,22 @@
+import json
 import os
+from datetime import date
+from time import sleep
+
 from selenium import webdriver
 from selenium.webdriver import ActionChains
-from time import sleep
-from datetime import date
+
+
+def get_json_details():
+    with open('details.json') as json_file:
+        return json.load(json_file)
 
 
 def set_chrome_options():
     options = webdriver.ChromeOptions()
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
     options.add_argument("--start-maximized")
+    options.add_argument("--headless")
 
     return options
 
@@ -21,9 +29,9 @@ def create_webdriver():
     return webdriver.Chrome(chrome_driver_path, chrome_options=set_chrome_options())
 
 
-def sign_in(driver):
-    driver.find_element_by_xpath("//input[@id='Username']").send_keys("curtis.martin@warwick.ac.uk")
-    driver.find_element_by_xpath("//input[@id='Password']").send_keys("D8iL*_#bwnyTgJ#")
+def sign_in(driver, username, password):
+    driver.find_element_by_xpath("//input[@id='Username']").send_keys(username)
+    driver.find_element_by_xpath("//input[@id='Password']").send_keys(password)
 
     driver.find_element_by_xpath("//input[@type='submit']").submit()
 
@@ -35,7 +43,7 @@ def open_portfolio(driver):
         portfolios[0].click()
 
 
-def create_timesheet_for_today(driver):
+def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory):
     sleep(0.5)
     driver.get("https://live.onefile.co.uk/timesheet/")
     sleep(0.5)
@@ -48,11 +56,11 @@ def create_timesheet_for_today(driver):
     entryInput = driver.find_element_by_xpath("//textarea[@class='formtext']")
     entryInput.click()
     entryInput.clear()
-    entryInput.send_keys("Study Day")
+    entryInput.send_keys(timesheetDescription)
 
     # Timesheet Category
     driver.find_element_by_tag_name("select").click()
-    driver.find_element_by_xpath("//option[text()='Assignment preparation & writing']").click()
+    driver.find_element_by_xpath("//option[text()='{0}']".format(timesheetCategory)).click()
 
     timeInputsContainer = driver.find_element_by_class_name(
         "date-time-picker-block")
@@ -76,11 +84,33 @@ def create_timesheet_for_today(driver):
 
 
 if __name__ == "__main__":
+    data = get_json_details()
+
     driver = create_webdriver()
 
     # Navigate to the OneFile website
     driver.get("https://live.onefile.co.uk")
 
-    sign_in(driver)
+    try:
+        sign_in(driver, data["username"], data["password"])
+    except KeyError:
+        print("No Username or Password, execution terminated")
+        exit()
+
     open_portfolio(driver)
-    create_timesheet_for_today(driver)
+
+    timesheetDescription = "Study Day"
+    try:
+        timesheetDescription = data["timesheetDescription"]
+    except KeyError:
+        print("No Timesheet Description, using default of {0}".format(timesheetDescription))
+
+    timesheetCategory = "Assignment preparation & writing"
+    try:
+        timesheetCategory = data["timesheetCategory"]
+    except KeyError:
+        print("No Timesheet Category, using default of {0}".format(timesheetCategory))
+
+    create_timesheet_for_today(driver, timesheetDescription, timesheetCategory)
+
+    driver.close()
