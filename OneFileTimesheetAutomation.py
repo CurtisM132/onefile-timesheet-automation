@@ -1,34 +1,10 @@
-import json
 import os
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from time import sleep
 
-from selenium import webdriver
-from selenium.webdriver import ActionChains
-
-
-def get_json_details():
-    with open('details.json') as json_file:
-        return json.load(json_file)
-
-
-def set_chrome_options():
-    options = webdriver.ChromeOptions()
-    options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-    options.add_argument("--start-maximized")
-    options.add_argument("--headless")
-    options.add_argument("--disable-gp")
-
-    return options
-
-
-def create_webdriver():
-    # Get current dir + chromedriver name
-    chrome_driver_path = os.path.dirname(
-        os.path.abspath(__file__)) + r"\chromedriver.exe"
-
-    return webdriver.Chrome(chrome_driver_path, chrome_options=set_chrome_options())
+from WebDriver import create_webdriver
+from FormDetails import JSONFormDetails
 
 
 def sign_in(driver, username, password):
@@ -45,7 +21,7 @@ def open_portfolio(driver):
         portfolios[0].click()
 
 
-def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, dateStr):
+def create_timesheet(driver, timesheetDescription, timesheetCategory, dateStr):
     sleep(0.5)
     driver.get("https://live.onefile.co.uk/timesheet/")
     sleep(0.5)
@@ -64,6 +40,7 @@ def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, 
     driver.find_element_by_tag_name("select").click()
     driver.find_element_by_xpath("//option[text()='{0}']".format(timesheetCategory)).click()
 
+    # Time Inputs
     timeInputsContainer = driver.find_element_by_class_name(
         "date-time-picker-block")
     timeInputs = timeInputsContainer.find_elements_by_tag_name("input")
@@ -72,7 +49,7 @@ def create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, 
     # Start Time
     timeInputs[1].send_keys("09:00")
 
-    # Duration
+    # Duration Inputs
     timeInputsContainer = driver.find_element_by_xpath(
         "//fieldset[@class='control-grouping']")
     timeInputs = timeInputsContainer.find_elements_by_tag_name("input")
@@ -92,35 +69,32 @@ if __name__ == "__main__":
             datetime.strptime(sys.argv[1], '%d/%m/%Y')
             currentDate = sys.argv[1]
         except ValueError:
-            print("Incorrect data format, should be DD/MM/YYYY")
+            print("Incorrect date format, should be DD/MM/YYYY. Using {0} instead".format(currentDate))
 
-    data = get_json_details()
+    formDetails = JSONFormDetails()
+    formDetails.load_json_details()
+        
+    # Get sign in details
+    username = formDetails.get_username()
+    if username == "":
+        print("No Username, execution terminated")
+        exit()
+
+    password = formDetails.get_password()
+    if password == "":
+        print("No Password, execution terminated")
+        exit()
+
+    timesheetDescription = formDetails.get_timesheet_description()
+    timesheetCategory = formDetails.get_timesheet_category()
 
     driver = create_webdriver()
 
     # Navigate to the OneFile website
     driver.get("https://live.onefile.co.uk")
 
-    try:
-        sign_in(driver, data["username"], data["password"])
-    except KeyError:
-        print("No Username or Password, execution terminated")
-        exit()
-
+    sign_in(driver, username, password)
     open_portfolio(driver)
-
-    timesheetDescription = "Study Day"
-    try:
-        timesheetDescription = data["timesheetDescription"]
-    except KeyError:
-        print("No Timesheet Description, using default of {0}".format(timesheetDescription))
-
-    timesheetCategory = "Assignment preparation & writing"
-    try:
-        timesheetCategory = data["timesheetCategory"]
-    except KeyError:
-        print("No Timesheet Category, using default of {0}".format(timesheetCategory))
-
-    create_timesheet_for_today(driver, timesheetDescription, timesheetCategory, currentDate)
+    create_timesheet(driver, timesheetDescription, timesheetCategory, currentDate)
 
     driver.close()
