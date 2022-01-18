@@ -40,7 +40,7 @@
 
 ### Prerequisites
 
-* Chrome (tested using version 96.0.xx.xx) installed in the default location
+* Chrome (tested using version 97.0.xx.xx) installed in the default location
   - Note: If the provided Chrome webdriver doesn't work for you, download the correct version for your Chrome installation version from https://chromedriver.chromium.org/downloads
 
 ### Installation
