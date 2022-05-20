@@ -35,3 +35,11 @@ class JSONFormDetails:
             timesheetCategory = "Assignment preparation & writing"
             print("No Timesheet Category, using default of {0}".format(timesheetCategory))
             return timesheetCategory
+            
+    def get_chrome_binary_path(self):
+        try:
+            return self.jsonData["chromeBrowserBinaryPath"]
+        except KeyError:
+            path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+            print("Chrome binary path, using default of {0}".format(path))
+            return path

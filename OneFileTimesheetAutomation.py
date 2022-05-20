@@ -88,7 +88,7 @@ if __name__ == "__main__":
     timesheetDescription = formDetails.get_timesheet_description()
     timesheetCategory = formDetails.get_timesheet_category()
 
-    driver = create_webdriver()
+    driver = create_webdriver(formDetails.get_chrome_binary_path())
 
     # Navigate to the OneFile website
     driver.get("https://live.onefile.co.uk")
