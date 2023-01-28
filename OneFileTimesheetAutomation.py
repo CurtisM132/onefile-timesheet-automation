@@ -22,6 +22,8 @@ def open_portfolio(driver):
 
 
 def create_timesheet(driver, timesheetDescription, timesheetCategory, dateStr):
+    print("Creating timesheet ({0})".format(dateStr))
+
     sleep(0.5)
     driver.get("https://live.onefile.co.uk/timesheet/")
     sleep(0.5)
@@ -88,13 +90,19 @@ if __name__ == "__main__":
     timesheetDescription = formDetails.get_timesheet_description()
     timesheetCategory = formDetails.get_timesheet_category()
 
+    print("Creating web driver")
     driver = create_webdriver(formDetails.get_chrome_binary_path())
 
     # Navigate to the OneFile website
+    print("Navigating to: https://live.onefile.co.uk")
     driver.get("https://live.onefile.co.uk")
 
     sign_in(driver, username, password)
     open_portfolio(driver)
     create_timesheet(driver, timesheetDescription, timesheetCategory, currentDate)
 
+    print("Finished, closing web driver")
     driver.close()
+    
+    print("Exiting")
+    sys.exit()
