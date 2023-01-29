@@ -40,7 +40,8 @@ def create_timesheet(driver, timesheetDescription, timesheetCategory, dateStr):
 
     # Timesheet Category
     driver.find_element_by_tag_name("select").click()
-    driver.find_element_by_xpath("//option[text()='{0}']".format(timesheetCategory)).click()
+    driver.find_element_by_xpath(
+        "//option[text()='{0}']".format(timesheetCategory)).click()
 
     # Time Inputs
     timeInputsContainer = driver.find_element_by_class_name(
@@ -71,11 +72,12 @@ if __name__ == "__main__":
             datetime.strptime(sys.argv[1], '%d/%m/%Y')
             currentDate = sys.argv[1]
         except ValueError:
-            print("Incorrect date format, should be DD/MM/YYYY. Using {0} instead".format(currentDate))
+            print(
+                "Incorrect date format, should be DD/MM/YYYY. Using {0} instead".format(currentDate))
 
     formDetails = JSONFormDetails()
     formDetails.load_json_details()
-        
+
     # Get sign in details
     username = formDetails.get_username()
     if username == "":
@@ -87,9 +89,6 @@ if __name__ == "__main__":
         print("No Password, execution terminated")
         exit()
 
-    timesheetDescription = formDetails.get_timesheet_description()
-    timesheetCategory = formDetails.get_timesheet_category()
-
     print("Creating web driver")
     driver = create_webdriver(formDetails.get_chrome_binary_path())
 
@@ -99,10 +98,15 @@ if __name__ == "__main__":
 
     sign_in(driver, username, password)
     open_portfolio(driver)
-    create_timesheet(driver, timesheetDescription, timesheetCategory, currentDate)
+    create_timesheet(
+        driver,
+        formDetails.get_description(),
+        formDetails.get_category(),
+        currentDate
+    )
 
     print("Finished, closing web driver")
     driver.close()
-    
+
     print("Exiting")
     sys.exit()
