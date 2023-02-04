@@ -19,15 +19,15 @@ def open_portfolio(driver):
         "account-list-item-details")
     if len(portfolios) > 0:
         portfolios[0].click()
+        sleep(1)
 
 
 def create_journal_entry(driver, title, desc, category, dateStr):
     print("Creating learning journal entry ({0})".format(dateStr))
     print("Note that you must manually input the date and learning criteria")
 
-    sleep(0.5)
     driver.get("https://learning.onefile.co.uk/")
-    sleep(0.5)
+    sleep(1)
 
     # Click the new journal entry button/div
     driver.find_element_by_xpath("//*[contains(text(),'add a new journal entry')]").click()
@@ -43,16 +43,12 @@ def create_journal_entry(driver, title, desc, category, dateStr):
     descEl.clear()
     descEl.send_keys(desc)
 
-    # Time Inputs
+    # Date
     # timeInputsContainer = driver.find_element_by_class_name(
     #     "date-time-picker-block")
     # timeInputs = timeInputsContainer.find_elements_by_tag_name("input")
     # # Date
     # timeInputs[0].send_keys(dateStr)
-
-    # Timesheet Category
-    driver.find_element_by_tag_name("mat-select").click()
-    driver.find_element_by_xpath("//*[contains(text(),'{0}')]".format(category)).click()
 
     # Start Time
     timeEl = driver.find_elements_by_class_name("ngb-tp-hour")
@@ -68,11 +64,15 @@ def create_journal_entry(driver, title, desc, category, dateStr):
     timeEl = driver.find_elements_by_class_name("ngb-tp-hour")
     hourInputEl = timeEl[1].find_element_by_tag_name("input")
     hourInputEl.click()
-    hourInputEl.send_keys("5")
+    hourInputEl.send_keys("8")
     timeEl = driver.find_elements_by_class_name("ngb-tp-minute")
     minuteInputEl = timeEl[1].find_element_by_tag_name("input")
     minuteInputEl.click()
     minuteInputEl.send_keys("0")
+
+    # Timesheet Category
+    driver.find_element_by_tag_name("mat-select").click()
+    driver.find_element_by_xpath("//*[contains(text(),'{0}')]".format(category)).click()
 
 
 if __name__ == "__main__":
@@ -107,13 +107,16 @@ if __name__ == "__main__":
 
     sign_in(driver, username, password)
     open_portfolio(driver)
-    create_journal_entry(
-        driver, 
-        formDetails.get_title(), 
-        formDetails.get_description(),
-        formDetails.get_category(),
-        date
-    )
+    
+    while True:
+        create_journal_entry(
+            driver, 
+            formDetails.get_title(), 
+            formDetails.get_description(),
+            formDetails.get_category(),
+            date
+        )
+        input()
 
     # print("Finished, closing web driver")
     # driver.close()
